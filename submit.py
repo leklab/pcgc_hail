@@ -18,14 +18,8 @@ p.add_argument("script")
 
 args, unparsed_args = p.parse_known_args()
 
-#hail_zip = "gs://seqr-hail/hail-jar/hail-9-17-2018-f3e47061.zip"
-#hail_jar = "gs://seqr-hail/hail-jar/hail-9-17-2018-f3e47061.jar"
-
-#hail_zip = "hail_builds/v01/hail-v01-10-8-2018-90c855449.zip"
-#hail_jar = "hail_builds/v01/hail-v01-10-8-2018-90c855449.jar"
-
-hail_jar = "hail_builds/v02/hail-0.2-6da0d3571629b326a197a56c6803e4c8841e61fb-Spark-2.4.0.jar"
-hail_zip = "hail_builds/v02/hail-0.2-6da0d3571629b326a197a56c6803e4c8841e61fb.zip"
+hail_jar = "hail_builds/hail-0.2-6da0d3571629b326a197a56c6803e4c8841e61fb-Spark-2.4.0.jar"
+hail_zip = "hail_builds/hail-0.2-6da0d3571629b326a197a56c6803e4c8841e61fb.zip"
 
 script = args.script
 script_args = " ".join(['"%s"' % arg for arg in unparsed_args])
