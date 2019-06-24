@@ -1,7 +1,7 @@
 # pcgc_hail
 Hail v0.2 pipeline used to VCF file from PCGC for export into elastic search.
 
-##Requirements
+## Requirements
 Python 3.6
 Spark-2.4
 
