@@ -16,5 +16,6 @@ python submit.py --run-locally ./hail_scripts/hail_annotate_pipeline.py --spark-
 
 ## Wookie mistakes
 Python 3.6 is not the default python
+
 $SPARK_HOME is set to an older version of Spark
 
