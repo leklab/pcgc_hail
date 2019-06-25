@@ -1,3 +1,4 @@
 *.log
 *.pyc
 hail_scripts/__pycache__
+hail_scripts/utils/__pycache__

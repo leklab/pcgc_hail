@@ -1,8 +1,11 @@
 import pprint
 import argparse
+
 from annotate_frequencies import *
 from generate_split_alleles import *
 from prepare_ht_export import *
+from prepare_ht_for_es import *
+from export_ht_to_es import *
 
 
 def run_pipeline(args):
@@ -23,13 +26,21 @@ def run_pipeline(args):
     #pprint.pprint(ht.show())
 
     #VEP Annotate the Hail table (ie. sites-only)
-    ht = hl.vep(ht, 'vep85-loftee-local.json')
+    #ht = hl.vep(ht, 'vep85-loftee-local.json')
     #pprint.pprint(ht.describe())
     #pprint.pprint(ht.show())
 
     ht = prepare_ht_export(ht)
+    #pprint.pprint(ht.describe())
+    #pprint.pprint(ht.show())
+
+    ht = prepare_ht_for_es(ht)
     pprint.pprint(ht.describe())
     pprint.pprint(ht.show())
+
+
+    export_ht_to_es(ht)
+
 
 
 

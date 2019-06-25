@@ -355,7 +355,9 @@ def prepare_ht_export(ht: hl.Table) -> hl.Table:
     ht = ht.annotate(info=ht.info.annotate(**unfurl_nested_annotations(ht)))
 
 
-    ht = ht.select('info', 'filters', 'rsid', 'qual','vep')
+    #ht = ht.select('info', 'filters', 'rsid', 'qual','vep')
+    ht = ht.select('info', 'filters', 'rsid', 'qual')
+
 
     header_dict = {'info': new_info_dict}
                    #'filter': make_filter_dict(ht)}
