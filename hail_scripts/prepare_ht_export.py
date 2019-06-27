@@ -301,7 +301,7 @@ def unfurl_nested_annotations(ht):
 
     #ML: Removing adj prefix so only shows population and adj, raw
     #pprint.pprint(freq_index_dict)
-    new_freq_index_dict = {i.replace('adj', 'gnomad'): j for i,j in freq_index_dict.items()}
+    new_freq_index_dict = {i.replace('adj_', 'gnomad_'): j for i,j in freq_index_dict.items()}
     #pprint.pprint(new_freq_index_dict)
 
     #for k, i in hl.eval(ht.globals.freq_index_dict).items():
@@ -312,6 +312,10 @@ def unfurl_nested_annotations(ht):
             combo_fields = ['adj'] + entry[2:]
             if combo_fields == ['adj', 'raw']:
                 combo_fields = ['raw']
+        
+        elif entry[0] == "raw":
+            combo_fields = ['raw']
+
         else:
             prefix = entry[0]
             combo_fields = ['adj'] + entry[1:]
@@ -320,19 +324,19 @@ def unfurl_nested_annotations(ht):
 
         combo = "_".join(combo_fields)
 
-        #combo_dict = {
-        #    f"AC_{combo}": ht.freq[i].AC,
-        #    f"AN_{combo}": ht.freq[i].AN,
-        #    f"AF_{combo}": ht.freq[i].AF,
-        #    f"nhomalt_{combo}": ht.freq[i].homozygote_count
-        #}
-
         combo_dict = {
-            f"{prefix}_AC_{combo}": ht.freq[i].AC,
-            f"{prefix}_AN_{combo}": ht.freq[i].AN,
-            f"{prefix}_AF_{combo}": ht.freq[i].AF,
-            f"{prefix}_nhomalt_{combo}": ht.freq[i].homozygote_count
+            f"AC_{combo}": ht.freq[i].AC,
+            f"AN_{combo}": ht.freq[i].AN,
+            f"AF_{combo}": ht.freq[i].AF,
+            f"nhomalt_{combo}": ht.freq[i].homozygote_count
         }
+
+        #combo_dict = {
+        #    f"{prefix}_AC_{combo}": ht.freq[i].AC,
+        #    f"{prefix}_AN_{combo}": ht.freq[i].AN,
+        #    f"{prefix}_AF_{combo}": ht.freq[i].AF,
+        #    f"{prefix}_nhomalt_{combo}": ht.freq[i].homozygote_count
+        #}
 
         expr_dict.update(combo_dict)
 
@@ -355,8 +359,8 @@ def prepare_ht_export(ht: hl.Table) -> hl.Table:
     ht = ht.annotate(info=ht.info.annotate(**unfurl_nested_annotations(ht)))
 
 
-    #ht = ht.select('info', 'filters', 'rsid', 'qual','vep')
-    ht = ht.select('info', 'filters', 'rsid', 'qual')
+    ht = ht.select('info', 'filters', 'rsid', 'qual','vep')
+    #ht = ht.select('info', 'filters', 'rsid', 'qual')
 
 
     header_dict = {'info': new_info_dict}

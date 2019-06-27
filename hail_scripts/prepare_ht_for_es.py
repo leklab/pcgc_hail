@@ -2,6 +2,7 @@ import argparse
 import itertools
 
 import hail as hl
+import pprint
 
 from utils import (
     get_expr_for_alt_allele,
@@ -252,9 +253,123 @@ ds = ds.expand_types().drop("locus", "alleles", "vep", "lcr", "segdup")
 
 #ds.write(args.output_url)
 
+
+fields_per_subpopulation = ["AC_adj", "AF_adj", "AN_adj", "nhomalt_adj"]
+#populations = ["afr", "amr", "asj", "eas", "fin", "nfe", "oth", "sas"]
+populations = ["afr", "amr", "eas", "eur", "oth", "sas"]
+
+other_fields = [
+    "AC_raw",
+    "AF_raw",
+    "AN_raw",
+    "nhomalt_raw",
+]
+
+
+def expr_for_field_with_subpopulations(row, field):
+
+#def expr_for_field_with_subpopulations(row):
+   # pprint.pprint(field)
+   # pprint.pprint(row.describe())
+    #pprint.pprint(row.info)
+    #pprint.pprint(row.info.dtype.fields)
+    #pprint.pprint(row.info[AC_adj])
+    #pprint.pprint(row.dtype.fields)
+    '''
+    return **dict(
+                (field, hl.struct(
+                            **dict(pop, row[f"{field}_{pop}"])
+                        )
+                        for pop in populations
+                )
+
+
+            )
+
+    '''
+
+    return hl.struct(        
+        **dict(
+            (
+                (pop, row[f"{field}_{pop}"])
+                    for pop in populations
+                        if f"{field}_{pop}" in row.dtype.fields
+            ),
+            #total = row.info[f"{field}"]
+        )
+
+    )
+
+
+def reformat_freq_fields(ht):
+
+    #pprint.pprint(ht.describe())
+    #x = ht.select(ht.info)
+    #pprint.pprint(x.show())
+
+    ht = ht.annotate(
+        AC=ht.info.AC_adj,
+        AN=ht.info.AN_adj,
+        AF=ht.info.AF_adj,
+        nhomalt=ht.info.nhomalt_adj,
+        AC_raw=ht.info.AC_raw,
+        AN_raw=ht.info.AN_raw,
+        AF_raw=ht.info.AF_raw,
+        nhomalt_raw=ht.info.nhomalt_raw,        
+    )
+
+    #pprint.pprint(ht.describe())
+
+
+    #for field in fields_per_subpopulation:
+    ht = ht.transmute(**{f"{field}": expr_for_field_with_subpopulations(ht.info, field) for field in fields_per_subpopulation })
+        #ht = ht.annotate(field=expr_for_field_with_subpopulations(ht, field))
+
+    #pprint.pprint(ht.describe())
+    #fields_per_subset = fields_per_subpopulation
+
+    #ht = ht.transmute(
+    #    **{subset: hl.struct(**{field: ds[f"{field}"] for field in fields_per_subset})}
+    #)
+
+    #pprint.pprint(ht.describe())
+    return ht
+
+
+
+def reformat_vep_fields(ht):
+    ht = ht.annotate(sortedTranscriptConsequences=get_expr_for_vep_sorted_transcript_consequences_array(vep_root=ht.vep))
+
+    ht = ht.annotate(
+        flags=hl.struct(
+            lc_lof=get_expr_for_variant_lc_lof_flag(ht.sortedTranscriptConsequences),
+            lof_flag=get_expr_for_variant_loftee_flag_flag(ht.sortedTranscriptConsequences),
+            #lcr=ds.lcr,
+            #segdup=ds.segdup,
+        ),
+        sortedTranscriptConsequences=hl.bind(
+            lambda genes_with_lc_lof_flag, genes_with_loftee_flag_flag: ht.sortedTranscriptConsequences.map(
+                lambda csq: csq.annotate(
+                    flags=hl.struct(
+                        lc_lof=get_expr_for_consequence_lc_lof_flag(csq),
+                        lc_lof_in_gene=genes_with_lc_lof_flag.contains(csq.gene_id),
+                        lof_flag=get_expr_for_consequence_loftee_flag_flag(csq),
+                        lof_flag_in_gene=genes_with_loftee_flag_flag.contains(csq.gene_id),
+                        nc_transcript=(csq.category == "lof") & (csq.lof == ""),
+                    )
+                )
+            ),
+            get_expr_for_genes_with_lc_lof_flag(ht.sortedTranscriptConsequences),
+            get_expr_for_genes_with_loftee_flag_flag(ht.sortedTranscriptConsequences),
+        ),
+    )
+
+    return ht
+
+
 def reformat_general_fields(ht):
 
-    
+    '''    
     ht = ht.transmute(
         allele_info=hl.struct(
         #BaseQRankSum=ht.BaseQRankSum,
@@ -273,7 +388,28 @@ def reformat_general_fields(ht):
         VQSR_POSITIVE_TRAIN_SITE=ht.info.VQSR_POSITIVE_TRAIN_SITE,
         )
     )
-    
+    '''  
+
+    ht = ht.select_globals()
+
+    ht = ht.annotate(
+        allele_info=hl.struct(
+        #BaseQRankSum=ht.BaseQRankSum,
+        #ClippingRankSum=ht.ClippingRankSum,
+        #DP=ht.DP,
+        FS=ht.info.FS,
+        InbreedingCoeff=ht.info.InbreedingCoeff,
+        MQ=ht.info.MQ,
+        MQRankSum=ht.info.MQRankSum,
+        QD=ht.info.QD,
+        #ReadPosRankSum=ht.ReadPosRankSum,
+        SOR=ht.info.SOR,
+        #VQSLOD=ht.VQSLOD,
+        #VQSR_culprit=ht.VQSR_culprit,
+        VQSR_NEGATIVE_TRAIN_SITE=ht.info.VQSR_NEGATIVE_TRAIN_SITE,
+        VQSR_POSITIVE_TRAIN_SITE=ht.info.VQSR_POSITIVE_TRAIN_SITE,
+        )
+    )  
 
     # Derived top level fields
     ht = ht.annotate(
@@ -290,6 +426,11 @@ def reformat_general_fields(ht):
 
 def prepare_ht_for_es(ht):
     ht = reformat_general_fields(ht)
+    ht = reformat_freq_fields(ht)
+    ht = reformat_vep_fields(ht)
+    
+    ht = ht.expand_types().drop("locus", "alleles", "vep")
+    #ht = ht.expand_types().drop("locus", "alleles")
 
     return ht
 
