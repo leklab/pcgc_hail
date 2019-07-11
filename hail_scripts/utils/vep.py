@@ -122,7 +122,9 @@ def get_expr_for_formatted_hgvs(csq):
             csq.hgvsp.contains("=") | csq.hgvsp.contains("%3D"),
             hl.bind(
                 lambda protein_letters: "p." + protein_letters + hl.str(csq.protein_start) + protein_letters,
-                hl.delimit(csq.amino_acids.split("").map(lambda l: PROTEIN_LETTERS_1TO3.get(l)), ""),
+                PROTEIN_LETTERS_1TO3.get(csq.amino_acids),
+                #hl.delimit(csq.amino_acids.split("").map(lambda l: PROTEIN_LETTERS_1TO3.get(l)), ""),
+                #FIX THIS. somehow this is not parsing correctly
             ),
             csq.hgvsp.split(":")[-1],
         ),
