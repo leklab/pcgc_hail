@@ -63,6 +63,7 @@ tissue_abbr = {
 def populate_gtex():
 	meta_ht = hl.import_table('/home/ml2529/gtex_data/GTEx_v7_Annotations_SampleAttributesDS.txt',delimiter='\t',key='SAMPID')
 	mt = hl.import_matrix_table('/home/ml2529/gtex_data/ENSG00000177732.tsv', row_key='transcript_id', row_fields={'transcript_id': hl.tstr, 'gene_id': hl.tstr},entry_type=hl.tfloat32)
+	#mt = hl.import_matrix_table('/home/ml2529/gtex_data/GTEx_Analysis_2016-01-15_v7_RSEMv1.2.22_transcript_tpm.txt.bgz', row_key='transcript_id', row_fields={'transcript_id': hl.tstr, 'gene_id': hl.tstr},entry_type=hl.tfloat32)
 
 	mt = mt.rename({'transcript_id': 'transcriptId', 'gene_id': 'geneId'})
 
@@ -91,10 +92,11 @@ def populate_gtex():
 		call_stats = hl.agg.filter(mt.tissue == x, hl.agg.mean(mt.x))
 		mt = mt.transmute_rows(**{f"{tissue_abbr[x]}": call_stats})
 
-	pprint.pprint(mt.show(include_row_fields=True))	
+	#pprint.pprint(mt.show(include_row_fields=True))	
 
 	ht = mt.rows()
 
+	#ht.write('gtex_expression.ht',overwrite=True)
 
 	export_ht_to_es(ht, index_name = 'gtex_tissue_tpms_by_transcript',index_type = 'tissue_tpms')
 
