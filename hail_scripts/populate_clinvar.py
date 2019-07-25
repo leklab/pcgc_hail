@@ -136,10 +136,9 @@ def import_vcf(
 
 def populate_clinvar():
 
-    clinvar_release_date = _parse_clinvar_release_date('clinvar.vcf.gz')
-    #mt = import_vcf(clinvar_vcf_hdfs_path, genome_version, drop_samples=True, min_partitions=2000, skip_invalid_loci=True)
-    mt = import_vcf('clinvar.vcf.gz', "37", drop_samples=True, min_partitions=2000, skip_invalid_loci=True)
-    mt = mt.annotate_globals(version=clinvar_release_date)
+    #clinvar_release_date = _parse_clinvar_release_date('clinvar.vcf.gz')
+    #mt = import_vcf('clinvar.vcf.gz', "37", drop_samples=True, min_partitions=2000, skip_invalid_loci=True)
+    #mt = mt.annotate_globals(version=clinvar_release_date)
 
 
     '''
@@ -203,22 +202,10 @@ def populate_clinvar():
     rows = rows.order_by(rows.variant_id).drop("locus", "alleles")
     rows.write('clinvar.ht',overwrite=True)
     '''
-    #print("\n=== Exporting to Elasticsearch ===")
-    #es = ElasticsearchClient(args.host, args.port)
-    #export_ht_to_es(rows, index_name = 'clinvar_grch37',index_type = 'variant')
+    print("\n=== Exporting to Elasticsearch ===")
+    rows = hl.read_table('clinvar.ht')
+    export_ht_to_es(rows, index_name = 'clinvar_grch37',index_type = 'variant')
 
-'''
-es.export_table_to_elasticsearch(
-    rows,
-    index_name=index_name,
-    index_type_name=args.index_type,
-    block_size=args.es_block_size,
-    num_shards=args.num_shards,
-    delete_index_before_exporting=True,
-    export_globals_to_index_meta=True,
-    verbose=True,
-)
-'''
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 import hail as hl
 from typing import *
+import pprint
 
 def get_adj_expr(
         gt_expr: hl.expr.CallExpression,
@@ -50,6 +51,7 @@ def annotate_frequencies(mt: hl.MatrixTable, meta_ht: hl.Table) -> hl.Table:
     #mt = hl.import_vcf('vcf_files/pcgc_chr20_slice.vcf.bgz',reference_genome='GRCh37')
 
     mt = mt.annotate_cols(pop = meta_ht[mt.s].Ethnicity)
+    mt = mt.annotate_cols(proband = meta_ht[mt.s].Proband)
 
 
     mt = annotate_adj(mt)
@@ -62,6 +64,8 @@ def annotate_frequencies(mt: hl.MatrixTable, meta_ht: hl.Table) -> hl.Table:
     sample_group_filters.extend([
         ({'pop': pop}, mt.pop == pop) for pop in cut_data.pop])
 
+    sample_group_filters.extend([({'proband': 'proband'}, mt.proband == 'Yes')])
+
     mt = mt.select_cols(group_membership=tuple(x[1] for x in sample_group_filters))
 
     frequency_expression = []
@@ -69,6 +73,7 @@ def annotate_frequencies(mt: hl.MatrixTable, meta_ht: hl.Table) -> hl.Table:
 
     for i in range(len(sample_group_filters)):
         subgroup_dict = sample_group_filters[i][0]
+        #pprint.pprint(subgroup_dict)
         subgroup_dict['group'] = 'adj'
 
         call_stats = hl.agg.filter(mt.group_membership[i] & mt.adj, hl.agg.call_stats(mt.GT, mt.alleles))
@@ -88,6 +93,18 @@ def annotate_frequencies(mt: hl.MatrixTable, meta_ht: hl.Table) -> hl.Table:
 
     frequency_expression.insert(1, raw_stats_bind)
     meta_expressions.insert(1, {'group': 'raw'})
+
+    '''
+    proband_stats = hl.agg.filter(mt.proband == 'Yes' & mt.adj, hl.agg.call_stats(mt.GT, mt.alleles))
+
+    proband_stats_bind = hl.bind(lambda cs: cs.annotate(
+        AC=cs.AC[1], AF=cs.AF[1], homozygote_count=cs.homozygote_count[1]
+    ), proband_stats)
+
+    frequency_expression.insert(1, proband_stats_bind)
+    meta_expressions.insert(1, {'group': 'proband'})
+    '''
+
 
     print(f'Calculating {len(frequency_expression)} aggregators...')
 

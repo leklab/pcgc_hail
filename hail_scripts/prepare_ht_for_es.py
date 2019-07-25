@@ -315,7 +315,11 @@ def reformat_freq_fields(ht):
         AC_raw=ht.info.AC_raw,
         AN_raw=ht.info.AN_raw,
         AF_raw=ht.info.AF_raw,
-        nhomalt_raw=ht.info.nhomalt_raw,        
+        nhomalt_raw=ht.info.nhomalt_raw,
+        AC_proband = ht.info.AC_adj_proband,
+        AN_proband = ht.info.AN_adj_proband,
+        AF_proband = ht.info.AF_adj_proband,               
+        nhomalt_proband = ht.info.nhomalt_adj_proband,               
     )
 
     #pprint.pprint(ht.describe())
@@ -427,10 +431,10 @@ def reformat_general_fields(ht):
 def prepare_ht_for_es(ht):
     ht = reformat_general_fields(ht)
     ht = reformat_freq_fields(ht)
-    ht = reformat_vep_fields(ht)
+    #ht = reformat_vep_fields(ht)
     
-    ht = ht.expand_types().drop("locus", "alleles", "vep")
-    #ht = ht.expand_types().drop("locus", "alleles")
+    #ht = ht.expand_types().drop("locus", "alleles", "vep")
+    ht = ht.expand_types().drop("locus", "alleles")
 
     return ht
 

@@ -9,10 +9,11 @@ from typing import *
 
 GROUPS = ['adj', 'raw']
 SEXES = ['male', 'female']
+PROBAND = ['proband']
 #POPS = ['afr', 'amr', 'asj', 'eas', 'fin', 'nfe', 'oth', 'sas']
 POPS = ['afr', 'amr', 'eas', 'eur', 'oth', 'sas']
 
-SORT_ORDER = ['popmax', 'group', 'pop', 'subpop', 'sex']
+SORT_ORDER = ['popmax', 'group', 'pop', 'proband', 'subpop', 'sex']
 
 
 pop_names = {
@@ -268,8 +269,14 @@ def make_freq_meta_index_dict(freq_meta):
         of each grouping entry in the frequency array
     :rtype: Dict of str: int
     '''
+    #pprint.pprint(freq_meta)
     index_dict = index_globals(freq_meta, dict(group=GROUPS))
+    #pprint.pprint(index_dict)
     index_dict.update(index_globals(freq_meta, dict(group=GROUPS, pop=POPS)))
+    #pprint.pprint(index_dict)
+    index_dict.update(index_globals(freq_meta, dict(group=GROUPS, proband=PROBAND)))
+    #pprint.pprint(index_dict)
+
     #index_dict.update(index_globals(freq_meta, dict(group=GROUPS, sex=SEXES)))
     #index_dict.update(index_globals(freq_meta, dict(group=GROUPS, pop=POPS, sex=SEXES)))
     #index_dict.update(index_globals(freq_meta, dict(group=GROUPS, pop=['nfe'], subpop=NFE_SUBPOPS)))
@@ -359,8 +366,8 @@ def prepare_ht_export(ht: hl.Table) -> hl.Table:
     ht = ht.annotate(info=ht.info.annotate(**unfurl_nested_annotations(ht)))
 
 
-    ht = ht.select('info', 'filters', 'rsid', 'qual','vep')
-    #ht = ht.select('info', 'filters', 'rsid', 'qual')
+    #ht = ht.select('info', 'filters', 'rsid', 'qual','vep')
+    ht = ht.select('info', 'filters', 'rsid', 'qual')
 
 
     header_dict = {'info': new_info_dict}
