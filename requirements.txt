@@ -1,0 +1,8 @@
+decorator
+numpy
+parsimonious
+pandas
+scipy
+bokeh
+requests
+elasticsearch
